@@ -18,4 +18,5 @@ public class ProductDto {
     @Min(100)
     private int ProductCost;
     private String ProductDescription;
+    private String ProductCompany;
 }
