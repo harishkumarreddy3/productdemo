@@ -1,64 +1,65 @@
 package com.ideyalabs.demoproject.service;
 import com.ideyalabs.demoproject.dto.ProductDto;
 import com.ideyalabs.demoproject.entity.Product;
+import com.ideyalabs.demoproject.exceptions.IdNotFoundException;
 import com.ideyalabs.demoproject.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 //comment
 @Service
 public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
+    private final ModelMapper mapper;
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, ModelMapper mapper) {
         this.productRepository = productRepository;
+        this.mapper = mapper;
     }
 
     @Override
     public ProductDto getProductById(int productId) {
-        ModelMapper mapper=new ModelMapper();
-        if(productRepository.findById(productId).isPresent()) {
-            Product product = productRepository.findById(productId).get();
-            return mapper.map(product, ProductDto.class);
-        }
-        else {
-            return null;
-        }
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        return optionalProduct.map(product -> mapper.map(product, ProductDto.class)).orElse(null);
     }
+
 
     @Override
     public List<ProductDto> getAllProducts() {
-        ModelMapper mapper=new ModelMapper();
         List<Product> products = productRepository.findAll();
-        return mapper.map(products, List.class);
+        return products.stream()
+                .map(product -> mapper.map(product, ProductDto.class))
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public ProductDto createProduct(ProductDto productDto) {
-        ModelMapper mapper=new ModelMapper();
             Product product=productRepository.save(mapper.map(productDto, Product.class));
         return mapper.map(product, ProductDto.class);
     }
 
     @Override
-    public ProductDto updateProduct(int id,ProductDto productDto) {
-        ModelMapper modelMapper=new ModelMapper();
-        boolean result=productRepository.existsById(id);
-        Optional<Product> product=productRepository.findById(id);
-        if(result){
-            Product p1=product.get();
-            p1.setProductName(productDto.getProductName());
-            p1.setProductCost(productDto.getProductCost());
-            p1.setProductDescription(productDto.getProductDescription());
-            p1.setProductCompany(productDto.getProductCompany());
-            Product updatedProduct=productRepository.save(p1);
-            return modelMapper.map(updatedProduct, ProductDto.class);
+    public ProductDto updateProduct(int id, ProductDto productDto) {
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isPresent()) {
+            Product existingProduct = optionalProduct.get();
+            existingProduct.setProductName(productDto.getProductName());
+            existingProduct.setProductCost(productDto.getProductCost());
+            existingProduct.setProductDescription(productDto.getProductDescription());
+            existingProduct.setProductCompany(productDto.getProductCompany());
+            Product updatedProduct = productRepository.save(existingProduct);
+            return mapper.map(updatedProduct, ProductDto.class);
+        } else {
+           return null;
         }
-        return null;
     }
+
 
     @Override
     public String deleteProductById(int productId){
