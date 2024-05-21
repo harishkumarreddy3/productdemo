@@ -1,5 +1,6 @@
 package com.ideyalabs.demoproject.service;
 import com.ideyalabs.demoproject.dto.ProductDto;
+import com.ideyalabs.demoproject.dto.ProductDto2;
 import com.ideyalabs.demoproject.entity.Product;
 import com.ideyalabs.demoproject.exceptions.IdNotFoundException;
 import com.ideyalabs.demoproject.repository.ProductRepository;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-//comment
 @Service
 public class ProductServiceImpl implements ProductService{
 
@@ -24,8 +24,11 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public ProductDto getProductById(int productId) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
-        return optionalProduct.map(product -> mapper.map(product, ProductDto.class)).orElse(null);
+        if (productRepository.existsById(productId)) {
+            Optional<Product> optionalProduct = productRepository.findById(productId);
+            return optionalProduct.map(product -> mapper.map(product, ProductDto.class)).orElse(null);
+        }
+        throw new IdNotFoundException("Product with id " + productId + " not found");
     }
 
 
@@ -39,9 +42,9 @@ public class ProductServiceImpl implements ProductService{
 
 
     @Override
-    public ProductDto createProduct(ProductDto productDto) {
-            Product product=productRepository.save(mapper.map(productDto, Product.class));
-        return mapper.map(product, ProductDto.class);
+    public ProductDto2 createProduct(ProductDto2 productDto2) {
+            Product product=productRepository.save(mapper.map(productDto2, Product.class));
+        return mapper.map(product, ProductDto2.class);
     }
 
     @Override
@@ -56,7 +59,7 @@ public class ProductServiceImpl implements ProductService{
             Product updatedProduct = productRepository.save(existingProduct);
             return mapper.map(updatedProduct, ProductDto.class);
         } else {
-           return null;
+            throw new IdNotFoundException("Id not found ");
         }
     }
 
@@ -65,7 +68,8 @@ public class ProductServiceImpl implements ProductService{
     public String deleteProductById(int productId){
         if(productRepository.existsById(productId)){
             productRepository.deleteById(productId);
+            return "Product  with id: "+productId+" has been deleted";
         }
-        return "Product deleted";
+        throw new IdNotFoundException("Id not found");
     }
 }

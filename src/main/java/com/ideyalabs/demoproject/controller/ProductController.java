@@ -1,5 +1,6 @@
 package com.ideyalabs.demoproject.controller;
 import com.ideyalabs.demoproject.dto.ProductDto;
+import com.ideyalabs.demoproject.dto.ProductDto2;
 import com.ideyalabs.demoproject.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,9 @@ public class ProductController {
         return productService.getAllProducts();
     }
     @PostMapping(value = "/products")
-    public ProductDto createProduct(@Valid @RequestBody ProductDto productDto){
+    public ProductDto2 createProduct(@Valid @RequestBody ProductDto2 productDto2){
         logger.info("createProduct called");
-        return productService.createProduct(productDto);
+        return productService.createProduct(productDto2);
 
     }
     @PutMapping(value = "/products/{productId}")
